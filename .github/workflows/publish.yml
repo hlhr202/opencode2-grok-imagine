@@ -3,7 +3,6 @@ name: publish
 # Publish to npm on version tags (e.g. v1.0.0) using npm Trusted Publishing.
 # No NPM_TOKEN: authentication is via GitHub OIDC, configured as a trusted
 # publisher on npmjs.com for this repo + this exact workflow filename.
-# Configure a trusted publisher for opencode2-grok-imagine after its first publish.
 on:
   push:
     tags:
@@ -15,7 +14,7 @@ permissions:
 
 jobs:
   publish:
-    # Prereleases use the one-time bootstrap workflow, not OIDC.
+    # Only stable version tags publish to npm's default dist-tag.
     if: ${{ !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
     steps:

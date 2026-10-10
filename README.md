@@ -26,7 +26,7 @@ completion, and downloads the resulting MP4.
 
 ## Install
 
-Once the package is published, add it to `opencode.json`:
+Add the plugin to `opencode.json`:
 
 ```json
 {
