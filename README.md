@@ -1,7 +1,8 @@
 # opencode2-grok-imagine
 
-Generate images and videos with Grok Imagine from
-[OpenCode 2](https://opencode.ai/v2/docs/), using a compatible API endpoint.
+An [OpenCode 2](https://opencode.ai/v2/docs/) plugin for xAI Grok Imagine image
+generation, text-to-video, and image-to-video through a CLIProxyAPI or
+OpenAI-compatible endpoint. Available on [npm](https://www.npmjs.com/package/opencode2-grok-imagine).
 
 This package is based on
 [opencode-grok-imagine-plugin](https://github.com/caoool/opencode-grok-imagine-plugin).
