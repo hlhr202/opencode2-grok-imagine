@@ -1,0 +1,42 @@
+name: bootstrap npm package
+
+# One-time CI release to create the npm package before OIDC can be configured.
+on:
+  push:
+    tags:
+      - "v1.0.0-rc.0"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+      - run: pnpm install --frozen-lockfile
+
+      - name: Verify package and tag
+        run: |
+          test "$(node -p "require('./package.json').name")" = "opencode2-grok-imagine"
+          test "$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME#v}"
+
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      # Revoke this one-time token after the package has been created.
+      - name: Publish prerelease to next
+        run: npm publish --access public --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_BOOTSTRAP_TOKEN }}

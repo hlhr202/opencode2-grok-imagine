@@ -1,6 +1,6 @@
 {
   "name": "opencode2-grok-imagine",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.0",
   "description": "opencode plugin for xAI Grok Imagine image and video generation (grok-imagine-image, grok-imagine-image-quality, grok-imagine-video, grok-imagine-video-1.5-preview) via a CLIProxyAPI/OpenAI-compatible endpoint.",
   "type": "module",
   "license": "MIT",
