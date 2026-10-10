@@ -1,12 +1,13 @@
 {
   "name": "opencode2-grok-imagine",
-  "version": "1.0.1",
-  "description": "OpenCode 2 plugin for xAI Grok Imagine image generation, text-to-video and image-to-video via CLIProxyAPI/OpenAI-compatible endpoints.",
+  "version": "1.0.2",
+  "description": "OpenCode 1 and 2 plugin for xAI Grok Imagine image generation, text-to-video and image-to-video via CLIProxyAPI/OpenAI-compatible endpoints.",
   "type": "module",
   "license": "MIT",
   "author": "hlhr202",
   "keywords": [
     "opencode",
+    "opencode-v1",
     "opencode-v2",
     "opencode-plugin",
     "grok",
@@ -49,6 +50,7 @@
   },
   "packageManager": "pnpm@10.30.3",
   "dependencies": {
+    "@opencode-ai/plugin": "^1.18.29",
     "@opencode/plugin": "^2.0.26"
   },
   "devDependencies": {

@@ -1,13 +1,13 @@
 # opencode2-grok-imagine
 
-An [OpenCode 2](https://opencode.ai/v2/docs/) plugin for xAI Grok Imagine image
+An [OpenCode](https://opencode.ai/v2/docs/) 1.18.29+ and 2 plugin for xAI Grok Imagine image
 generation, text-to-video, and image-to-video through a CLIProxyAPI or
 OpenAI-compatible endpoint. Available on [npm](https://www.npmjs.com/package/opencode2-grok-imagine).
 
 This package is based on
 [opencode-grok-imagine-plugin](https://github.com/caoool/opencode-grok-imagine-plugin).
-It updates the original plugin to TypeScript and the OpenCode 2 plugin API while
-keeping its image and video generation features.
+It updates the original plugin to TypeScript, supports the OpenCode 1 and 2
+plugin APIs, and keeps its image and video generation features.
 
 This adaptation is maintained by [hlhr202](https://github.com/hlhr202).
 
@@ -27,7 +27,7 @@ completion, and downloads the resulting MP4.
 
 ## Install
 
-Add the plugin to `opencode.json`:
+Add the plugin to `opencode.json` (OpenCode 2):
 
 ```json
 {
@@ -46,8 +46,8 @@ export GROK_IMAGINE_BASE_URL="https://your-proxy.example.com"
 export GROK_IMAGINE_API_KEY="your-api-key"
 ```
 
-Alternatively, use the object form of `plugins` in `opencode.json` (or
-`opencode.jsonc`) to pass plugin options:
+Alternatively, pass plugin options in `opencode.json` (or `opencode.jsonc`).
+For **OpenCode 2**, use `plugins`:
 
 ```json
 {
@@ -62,6 +62,19 @@ Alternatively, use the object form of `plugins` in `opencode.json` (or
       }
     }
   ]
+}
+```
+
+For **OpenCode 1.18.29+**, use `plugin`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [["opencode2-grok-imagine", {
+    "baseURL": "https://your-proxy.example.com",
+    "apiKey": "your-api-key",
+    "insecureTLS": false
+  }]]
 }
 ```
 
@@ -154,5 +167,5 @@ implementation and the Grok Imagine image and video workflows.
 
 ## License
 
-MIT licensed. Original plugin © 2026 Lu Cao; OpenCode 2 adaptation © 2026
+MIT licensed. Original plugin © 2026 Lu Cao; OpenCode adaptation © 2026
 hlhr202. See [LICENSE](LICENSE) for the copyright notices.

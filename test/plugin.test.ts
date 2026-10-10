@@ -44,6 +44,78 @@ test("registers both V2 tools with JSON schemas", async () => {
   assert.ok(!("image" in image.properties))
 })
 
+test("V1 registers the same tools and argument names as V2", async () => {
+  const definitions = [createImageTool(() => createClient(), async () => "/session"),
+    createVideoTool(() => createClient(), async () => "/session")]
+  const v1 = await GrokImaginePlugin.server({ directory: "/session" })
+  assert.deepEqual(Object.keys(v1.tool), ["grok_image", "grok_video"])
+  for (const [index, name] of ["grok_image", "grok_video"].entries()) {
+    const v1Args = (v1.tool[name] as { args: Record<string, { safeParse(value: unknown): { success: boolean } }> }).args
+    const v2Args = (definitions[index].input as { properties: Record<string, unknown> }).properties
+    assert.deepEqual(Object.keys(v1Args).sort(), Object.keys(v2Args).sort())
+    assert.equal(v1Args.prompt.safeParse(undefined).success, false)
+    assert.equal(v1Args.prompt.safeParse("hello").success, true)
+  }
+  const imageArgs = (v1.tool.grok_image as { args: Record<string, { safeParse(value: unknown): { success: boolean } }> }).args
+  assert.equal(imageArgs.count.safeParse(5).success, false)
+  const videoArgs = (v1.tool.grok_video as { args: Record<string, { safeParse(value: unknown): { success: boolean } }> }).args
+  assert.equal(videoArgs.timeout_seconds.safeParse(29).success, false)
+})
+
+test("V1 tools use plugin options, session directory, abort signal, and return file attachments", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "grok v1-"))
+  const originalFetch = globalThis.fetch
+  const controller = new AbortController()
+  const calls: { url: string; signal?: AbortSignal; auth?: string; body?: Record<string, unknown> }[] = []
+  const status: string[] = []
+  globalThis.fetch = async (url, init) => {
+    const target = String(url)
+    calls.push({ url: target, signal: init?.signal as AbortSignal | undefined,
+      auth: new Headers(init?.headers).get("Authorization") ?? undefined,
+      body: init?.body ? JSON.parse(String(init.body)) : undefined })
+    if (target.endsWith("/images/generations")) {
+      return new Response(JSON.stringify({ data: [{ b64_json: Buffer.from("image").toString("base64") }] }))
+    }
+    if (target.endsWith("/videos/generations")) return new Response(JSON.stringify({ request_id: "job-1" }))
+    if (target.endsWith("/videos/job-1")) return new Response(JSON.stringify({ status: "done", video: { url: "https://proxy.test/clip.mp4" } }))
+    if (target.endsWith("/clip.mp4")) return new Response("video")
+    throw new Error(`Unexpected fetch: ${target}`)
+  }
+  try {
+    await writeFile(join(dir, "source.png"), "source")
+    const v1 = await GrokImaginePlugin.server({ directory: "/wrong" }, { baseURL: "https://proxy.test", apiKey: "key" })
+    type V1Result = { output: string; metadata: Record<string, unknown>; attachments: { url: string; mime: string; filename: string }[] }
+    type V1Tool = { execute(args: unknown, context: unknown): Promise<V1Result> }
+    const context = { directory: dir, abort: controller.signal, metadata: ({ title }: { title: string }) => status.push(title) }
+    const image = await (v1.tool.grok_image as V1Tool).execute({ prompt: "blue crane", output_dir: "assets/img" }, context)
+    assert.match(image.output, /Saved 1 image/)
+    assert.equal(image.attachments[0].mime, "image/png")
+    assert.match(image.attachments[0].url, /grok%20v1-/)
+    assert.equal((await readFile(fileURLToPath(image.attachments[0].url))).toString(), "image")
+    assert.ok(fileURLToPath(image.attachments[0].url).startsWith(join(dir, "assets/img")))
+    assert.equal(image.metadata.model, DEFAULT_IMAGE_MODEL)
+
+    const video = await (v1.tool.grok_video as V1Tool).execute({ prompt: "move", image: "source.png", duration: 5 }, context)
+    assert.match(video.output, /Saved video/)
+    assert.equal(video.attachments[0].mime, "video/mp4")
+    assert.equal((await readFile(fileURLToPath(video.attachments[0].url))).toString(), "video")
+    assert.equal(video.metadata.requestId, "job-1")
+    assert.deepEqual(calls.map((call) => call.url), [
+      "https://proxy.test/v1/images/generations", "https://proxy.test/v1/videos/generations",
+      "https://proxy.test/v1/videos/job-1", "https://proxy.test/clip.mp4",
+    ])
+    assert.equal(calls[0].auth, "Bearer key")
+    assert.deepEqual(calls.slice(0, 3).map((call) => call.signal), [controller.signal, controller.signal, controller.signal])
+    assert.match((calls[1].body?.image as { url: string }).url, /^data:image\/png;base64,/)
+    assert.equal(calls[1].body?.duration, 5)
+    assert.ok(status.some((title) => title.includes("Generating image")))
+    assert.ok(status.some((title) => title.includes("Rendering video")))
+  } finally {
+    globalThis.fetch = originalFetch
+    await rm(dir, { recursive: true, force: true })
+  }
+})
+
 test("normalizeModel strips aliases and defaults by kind", () => {
   assert.equal(normalizeModel("xai/grok-imagine-image", "image"), "grok-imagine-image")
   assert.equal(normalizeModel("grok/grok-imagine-video-1.5-preview", "video"), "grok-imagine-video-1.5-preview")

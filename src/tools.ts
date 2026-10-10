@@ -48,14 +48,19 @@ interface VideoResponse {
   url?: string
 }
 
-const OUTPUT_DIR_DESCRIPTION =
+export const OUTPUT_DIR_DESCRIPTION =
   "Where to save. For real project assets, set this to the correct path (e.g. 'assets/img' or 'public/videos'), absolute or relative to the session directory. Omit for scratch/experimental generation, which goes to a self-gitignored .grok-tmp folder."
+
+export const IMAGE_DESCRIPTION =
+  "Generate one or more still images with xAI Grok Imagine and save them to disk. Use for pictures, illustrations, art, thumbnails, or concept frames from a text prompt. For animated clips use grok_video instead."
+
+export const VIDEO_DESCRIPTION =
+  "Generate a short video with xAI Grok Imagine. Submits the job, polls until rendering finishes, then downloads the mp4 to disk. Works in two modes: text-to-video from a prompt, or image-to-video by also passing an `image` to animate. For still images use grok_image instead."
 
 export function createImageTool(getClient: () => Client, getDirectory: GetDirectory): Info {
   return {
     name: "grok_image",
-    description:
-      "Generate one or more still images with xAI Grok Imagine and save them to disk. Use for pictures, illustrations, art, thumbnails, or concept frames from a text prompt. For animated clips use grok_video instead.",
+    description: IMAGE_DESCRIPTION,
     input: {
       type: "object",
       properties: {
@@ -125,8 +130,7 @@ export function createImageTool(getClient: () => Client, getDirectory: GetDirect
 export function createVideoTool(getClient: () => Client, getDirectory: GetDirectory): Info {
   return {
     name: "grok_video",
-    description:
-      "Generate a short video with xAI Grok Imagine. Submits the job, polls until rendering finishes, then downloads the mp4 to disk. Works in two modes: text-to-video from a prompt, or image-to-video by also passing an `image` to animate. For still images use grok_image instead.",
+    description: VIDEO_DESCRIPTION,
     input: {
       type: "object",
       properties: {
