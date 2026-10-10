@@ -37,8 +37,8 @@ Add the plugin to `opencode.json`:
 
 ## Configure
 
-The endpoint and API key are required when a tool is used. Set them in the
-OpenCode server process's environment (recommended for secrets):
+The endpoint and API key are required when a tool is used. You can set them in
+the OpenCode server process's environment:
 
 ```bash
 export GROK_IMAGINE_BASE_URL="https://your-proxy.example.com"
@@ -56,6 +56,7 @@ Alternatively, use the object form of `plugins` in `opencode.json` (or
       "package": "opencode2-grok-imagine",
       "options": {
         "baseURL": "https://your-proxy.example.com",
+        "apiKey": "your-api-key",
         "insecureTLS": false
       }
     }
@@ -68,7 +69,7 @@ All supported plugin settings:
 | Plugin option | Environment variable(s), in priority order | Default | Description |
 | --- | --- | --- | --- |
 | `baseURL` | `GROK_IMAGINE_BASE_URL`, then `CPA_BASE_URL` | Required | URL of the compatible API endpoint. A trailing `/v1` is optional; it is added if absent. |
-| `apiKey` | `GROK_IMAGINE_API_KEY`, then `CPA_API_KEY` | Required | Bearer token for the endpoint. Prefer an environment variable over storing a secret in `opencode.json`. |
+| `apiKey` | `GROK_IMAGINE_API_KEY`, then `CPA_API_KEY` | Required | Bearer token for the endpoint. |
 | `insecureTLS` | `GROK_IMAGINE_INSECURE_TLS` | `false` | Disable TLS certificate verification for self-signed proxies under Bun only. The plugin option accepts a boolean or a string; the environment variable accepts a string. |
 
 For `baseURL` and `apiKey`, a non-empty plugin option takes priority, then the
