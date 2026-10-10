@@ -35,10 +35,6 @@ Once the package is published, add it to `opencode.json`:
 }
 ```
 
-If you previously used `opencode-grok-imagine-plugin`, replace that entry. Do
-not load both packages together. The old package's 0.1.x releases are for
-OpenCode 1.
-
 ## Configure
 
 Set the endpoint and API key in the OpenCode server's environment:

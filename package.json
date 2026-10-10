@@ -1,6 +1,6 @@
 {
   "name": "opencode2-grok-imagine",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "description": "opencode plugin for xAI Grok Imagine image and video generation (grok-imagine-image, grok-imagine-image-quality, grok-imagine-video, grok-imagine-video-1.5-preview) via a CLIProxyAPI/OpenAI-compatible endpoint.",
   "type": "module",
   "license": "MIT",
@@ -19,11 +19,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/caoool/opencode-grok-imagine-plugin.git"
+    "url": "git+https://github.com/hlhr202/opencode2-grok-imagine-plugin.git"
   },
-  "homepage": "https://github.com/caoool/opencode-grok-imagine-plugin#readme",
+  "homepage": "https://github.com/hlhr202/opencode2-grok-imagine-plugin#readme",
   "bugs": {
-    "url": "https://github.com/caoool/opencode-grok-imagine-plugin/issues"
+    "url": "https://github.com/hlhr202/opencode2-grok-imagine-plugin/issues"
   },
   "exports": {
     ".": {
