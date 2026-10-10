@@ -1,0 +1,56 @@
+name: publish
+
+# Publish to npm on version tags (e.g. v0.2.0) using npm Trusted Publishing.
+# No NPM_TOKEN: authentication is via GitHub OIDC, configured as a trusted
+# publisher on npmjs.com for this repo + this exact workflow filename.
+# The new opencode2-grok-imagine package needs its own trusted publisher
+# configured after its first publish; the old package's trust does not transfer.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  id-token: write # required for OIDC trusted publishing + provenance
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      # Trusted publishing / OIDC requires a recent npm CLI.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Fail early if the tag does not match the version in package.json.
+      - name: Verify tag matches package version
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Run tests
+        run: |
+          pnpm typecheck
+          pnpm test
+          pnpm build
+
+      # Provenance and auth are automatic under trusted publishing.
+      - name: Publish
+        run: npm publish --access public

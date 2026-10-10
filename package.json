@@ -1,0 +1,59 @@
+{
+  "name": "opencode2-grok-imagine",
+  "version": "0.2.0",
+  "description": "opencode plugin for xAI Grok Imagine image and video generation (grok-imagine-image, grok-imagine-image-quality, grok-imagine-video, grok-imagine-video-1.5-preview) via a CLIProxyAPI/OpenAI-compatible endpoint.",
+  "type": "module",
+  "license": "MIT",
+  "author": "hlhr202",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "grok",
+    "grok-imagine",
+    "xai",
+    "image-generation",
+    "video-generation",
+    "text-to-image",
+    "text-to-video",
+    "cli-proxy-api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caoool/opencode-grok-imagine-plugin.git"
+  },
+  "homepage": "https://github.com/caoool/opencode-grok-imagine-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/caoool/opencode-grok-imagine-plugin/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.30.3",
+  "dependencies": {
+    "@opencode/plugin": "^2.0.26"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "prepack": "pnpm build"
+  }
+}
