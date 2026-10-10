@@ -37,39 +37,58 @@ Add the plugin to `opencode.json`:
 
 ## Configure
 
-Set the endpoint and API key in the OpenCode server's environment:
+The endpoint and API key are required when a tool is used. Set them in the
+OpenCode server process's environment (recommended for secrets):
 
 ```bash
 export GROK_IMAGINE_BASE_URL="https://your-proxy.example.com"
 export GROK_IMAGINE_API_KEY="your-api-key"
 ```
 
-`CPA_BASE_URL` and `CPA_API_KEY` are also supported. The base URL can include
-or omit `/v1`.
-
-Alternatively, pass the base URL as a plugin option:
+Alternatively, use the object form of `plugins` in `opencode.json` (or
+`opencode.jsonc`) to pass plugin options:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "plugins": [
     {
       "package": "opencode2-grok-imagine",
       "options": {
-        "baseURL": "https://your-proxy.example.com"
+        "baseURL": "https://your-proxy.example.com",
+        "insecureTLS": false
       }
     }
   ]
 }
 ```
 
-Plugin options take precedence over environment variables. An `apiKey` option
-is available, but keeping secrets in the server environment is recommended.
+All supported plugin settings:
 
-TLS verification is enabled by default. `insecureTLS` /
-`GROK_IMAGINE_INSECURE_TLS=1` is intended only for self-signed proxies you
-control. Bun supports the per-request setting; Node's `fetch` does not, so
-disabling verification under Node requires `NODE_TLS_REJECT_UNAUTHORIZED=0`
-for the server process, which affects all its requests.
+| Plugin option | Environment variable(s), in priority order | Default | Description |
+| --- | --- | --- | --- |
+| `baseURL` | `GROK_IMAGINE_BASE_URL`, then `CPA_BASE_URL` | Required | URL of the compatible API endpoint. A trailing `/v1` is optional; it is added if absent. |
+| `apiKey` | `GROK_IMAGINE_API_KEY`, then `CPA_API_KEY` | Required | Bearer token for the endpoint. Prefer an environment variable over storing a secret in `opencode.json`. |
+| `insecureTLS` | `GROK_IMAGINE_INSECURE_TLS` | `false` | Disable TLS certificate verification for self-signed proxies under Bun only. The plugin option accepts a boolean or a string; the environment variable accepts a string. |
+
+For `baseURL` and `apiKey`, a non-empty plugin option takes priority, then the
+`GROK_IMAGINE_*` variable, then the `CPA_*` variable. For `insecureTLS`, any
+provided plugin option (including `false`) takes priority over the environment
+variable. `true`, `1`, `yes`, and `on` (case-insensitive strings) enable it;
+other values leave verification enabled. The URL and key are checked on first
+tool use, so the plugin can load before they are set.
+
+TLS verification is enabled by default. Use `insecureTLS: true` or
+`GROK_IMAGINE_INSECURE_TLS=1` only for a self-signed proxy you control. Bun
+supports this per-request setting; Node's `fetch` ignores it. Under Node,
+disabling verification instead requires `NODE_TLS_REJECT_UNAUTHORIZED=0` on the
+server process, which affects **all** its HTTPS requests and is not recommended.
+The environment variables above must be visible to the running OpenCode
+server, not just to a separate terminal session.
+
+The options above configure the API connection. `model`, `count`, `output_dir`,
+and other generation settings below are **tool arguments** supplied per call;
+they are not supported as plugin options.
 
 ## Usage
 
@@ -83,27 +102,28 @@ Ask your agent for what you want to create:
 
 ### Image options
 
-`grok_image` requires a `prompt`. Optional arguments:
+`grok_image` requires a `prompt` (the text description). Optional arguments:
 
-| Argument | Purpose |
+| Argument | Accepted values and default |
 | --- | --- |
 | `model` | `grok-imagine-image-quality` (default) or `grok-imagine-image` |
-| `count` | Number of images, 1–4 |
-| `output_dir` | Directory for saved images |
+| `count` | Integer from 1–4; default 1 |
+| `output_dir` | Absolute path or path relative to the session directory; default `.grok-tmp/` |
 
 ### Video options
 
-`grok_video` requires a `prompt`. Optional arguments:
+`grok_video` requires a `prompt` (the video description or motion to apply).
+Optional arguments:
 
-| Argument | Purpose |
+| Argument | Accepted values and default |
 | --- | --- |
 | `model` | `grok-imagine-video` (default) or `grok-imagine-video-1.5-preview` |
 | `image` | Local path, HTTP(S) URL, or data URI to animate; omit for text-to-video |
-| `duration` | Requested duration, 1–30 seconds, if supported upstream |
-| `aspect_ratio` | For example, `16:9` or `9:16` |
-| `resolution` | For example, `720p` |
-| `output_dir` | Directory for the saved MP4 |
-| `timeout_seconds` | Maximum polling time, 30–1800 seconds; default 900 |
+| `duration` | Integer from 1–30 seconds; omitted unless specified, if supported upstream |
+| `aspect_ratio` | String such as `16:9` or `9:16`; omitted unless specified |
+| `resolution` | String such as `720p`; omitted unless specified |
+| `output_dir` | Absolute path or path relative to the session directory; default `.grok-tmp/` |
+| `timeout_seconds` | Integer from 30–1800 seconds; default 900 |
 
 Some upstream implementations require an `image` when using
 `grok-imagine-video-1.5-preview`. Model availability depends on your endpoint
